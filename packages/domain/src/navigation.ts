@@ -33,6 +33,7 @@ export const POS_NAV: NavItem[] = [
   { key: 'menu', label: 'New Order', path: '/order', icon: 'UtensilsCrossed', capabilities: ['restaurant.pos'], permission: 'restaurant.order', family: 'restaurant' },
   { key: 'running', label: 'Running Orders', path: '/running', icon: 'ClipboardList', capabilities: ['restaurant.pos'], permission: 'restaurant.order', family: 'restaurant' },
   { key: 'kds', label: 'Kitchen', path: '/kds', icon: 'ChefHat', capabilities: ['restaurant.kds'], permission: 'kds.operate', family: 'restaurant' },
+  { key: 'jobcards', label: 'Job Cards', path: '/jobcards', icon: 'Wrench', capabilities: ['job-card'], permission: 'jobcard.edit', family: 'retail' },
   { key: 'sales', label: 'Sales', path: '/sales', icon: 'Receipt', capabilities: ['pos.billing', 'restaurant.pos'], permission: 'pos.sell' },
   { key: 'returns', label: 'Returns', path: '/returns', icon: 'Undo2', capabilities: ['returns'], permission: 'pos.return', family: 'retail' },
   { key: 'held', label: 'Held Bills', path: '/held', icon: 'CirclePause', capabilities: ['hold-resume'], permission: 'pos.hold', family: 'retail' },
@@ -45,6 +46,7 @@ export const POS_NAV: NavItem[] = [
 export const BACKOFFICE_NAV: NavItem[] = [
   { key: 'dashboard', label: 'Dashboard', path: '/', icon: 'LayoutDashboard', group: 'Overview', permission: 'dashboard.view' },
   { key: 'sales', label: 'Sales', path: '/sales', icon: 'Receipt', group: 'Overview', permission: 'reports.view' },
+  { key: 'jobcards', label: 'Job Cards', path: '/jobcards', icon: 'Wrench', group: 'Overview', capabilities: ['job-card'], permission: 'jobcard.view', family: 'retail' },
   { key: 'products', label: 'Products', path: '/products', icon: 'Package', group: 'Catalog', capabilities: ['catalog'], permission: 'catalog.view', family: 'retail' },
   { key: 'menu', label: 'Menu', path: '/menu', icon: 'UtensilsCrossed', group: 'Catalog', capabilities: ['restaurant.pos'], permission: 'catalog.view', family: 'restaurant' },
   { key: 'categories', label: 'Categories', path: '/categories', icon: 'Tags', group: 'Catalog', capabilities: ['catalog'], permission: 'catalog.view' },

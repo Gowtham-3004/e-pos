@@ -31,7 +31,7 @@ export function Inventory() {
   const canAdjust = s.can('inventory.adjust');
   const multi = s.has('multi-store') && s.stores.length > 1;
 
-  const rows: Row[] = useLive(cloud, ['stockMovements'], () => products.filter((p) => p.active).map((p) => {
+  const rows: Row[] = useLive(cloud, ['stockMovements'], () => products.filter((p) => p.active && !p.isService).map((p) => {
     const onHand = onHandIn(cloud, s.scope, p.id);
     const damaged = damagedIn(cloud, s.scope, p.id);
     return { p, onHand, damaged, available: Math.max(0, onHand), value: Math.round(Math.max(0, onHand) * p.costPaise), health: healthOf(onHand, p.reorderLevel * s.scope.length) };

@@ -25,7 +25,7 @@ export function StockTakePage() {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const sheet = useLive(cloud, ['stockMovements'], () => products.filter((p) => p.active && (!cat || p.categoryId === cat)).map((p) => ({ p, system: onHandIn(cloud, [store], p.id) })).sort((a, b) => (a.p.rack ?? '').localeCompare(b.p.rack ?? '') || a.p.name.localeCompare(b.p.name)), [products, cat, store]);
+  const sheet = useLive(cloud, ['stockMovements'], () => products.filter((p) => p.active && !p.isService && (!cat || p.categoryId === cat)).map((p) => ({ p, system: onHandIn(cloud, [store], p.id) })).sort((a, b) => (a.p.rack ?? '').localeCompare(b.p.rack ?? '') || a.p.name.localeCompare(b.p.name)), [products, cat, store]);
   const rows = useMemo(() => sheet.map((r) => {
     const c = counts[r.p.id];
     const counted = c === undefined || c === '' ? undefined : Number(c);

@@ -12,6 +12,7 @@ export function Receipt({ db, sale, copy }: { db: LocalDatabase; sale: Sale; cop
   const cashier = db.get('users', sale.userId);
   const customer = db.get('customers', sale.customerId);
   const order = sale.restaurantOrderId ? db.get('orders', sale.restaurantOrderId) : undefined;
+  const job = sale.jobCardId ? db.get('jobCards', sale.jobCardId) : undefined;
   const cash = sale.tenders.find((t) => t.method === 'cash');
   return (
     <div className="receipt" aria-label={`Receipt ${sale.documentNo}`}>
@@ -27,6 +28,7 @@ export function Receipt({ db, sale, copy }: { db: LocalDatabase; sale: Sale; cop
       <div className="receipt__kv"><span>Date</span><span>{dateTime(sale.committedAt)}</span></div>
       <div className="receipt__kv"><span>Counter</span><span>{counter?.code} · {cashier?.name}</span></div>
       {order ? <div className="receipt__kv"><span>Order</span><span>{order.orderNo} · {order.tableCode ? `Table ${order.tableCode}` : `Token ${order.token}`}</span></div> : null}
+      {job ? <div className="receipt__kv"><span>Job</span><span>{job.jobNo} · {job.device.brand} {job.device.model}{job.device.imeiOrSerial ? ` · ${job.device.imeiOrSerial}` : ''}</span></div> : null}
       {customer || sale.customerName ? <div className="receipt__kv"><span>Customer</span><span>{customer?.name ?? sale.customerName}{customer?.phone ? ` · ${customer.phone}` : ''}</span></div> : null}
       <div className="receipt__rule" />
       <div className="receipt__line receipt__line--head"><span>Item</span><span>Qty</span><span>Rate</span><span>Amount</span></div>

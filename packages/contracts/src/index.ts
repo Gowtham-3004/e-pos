@@ -55,6 +55,7 @@ export type Capability =
   | 'variants'
   | 'serial-tracking'
   | 'warranty'
+  | 'job-card'
   | 'prescription'
   | 'multi-uom'
   | 'price-groups'
@@ -250,6 +251,8 @@ export type Permission =
   | 'restaurant.table.transfer'
   | 'restaurant.bill.split'
   | 'kds.operate'
+  | 'jobcard.view'
+  | 'jobcard.edit'
   | 'approvals.act'
   | 'platform.tenants'
   | 'platform.devices'
@@ -388,6 +391,8 @@ export interface Product {
   prescriptionRequired?: boolean;
   uomConversions?: UomConversion[];
   model?: string;
+  /** Service / labour item (SAC) — priced and taxed like a product but never stocked. */
+  isService?: boolean;
 }
 
 export interface SerialNumber {
@@ -529,7 +534,7 @@ export interface TaxSummaryRow {
 export interface Sale extends OriginContext {
   id: ID; // machine transaction id
   documentNo: string; // human/legal invoice number INV-C02-001284
-  kind: 'retail' | 'restaurant';
+  kind: 'retail' | 'restaurant' | 'service';
   status: TransactionStatus;
   customerId?: ID;
   customerName?: string;
@@ -553,6 +558,7 @@ export interface Sale extends OriginContext {
   syncedAt?: ISODateTime;
   printed: boolean;
   restaurantOrderId?: ID;
+  jobCardId?: ID;
   loyaltyEarned?: number;
   loyaltyRedeemed?: number;
 }
@@ -1062,4 +1068,71 @@ export interface SessionContext {
   capabilities: Capability[];
   permissions: Permission[];
   authMode: 'online' | 'offline' | 'recovery';
+}
+
+// ───────────────────────── Service / repair job cards ─────────────────────────
+
+export type JobCardStatus = 'received' | 'diagnosing' | 'awaiting-approval' | 'in-progress' | 'ready' | 'delivered' | 'cancelled';
+
+export interface JobCardDevice {
+  brand: string;
+  model: string;
+  /** IMEI for phones, serial number for other devices. */
+  imeiOrSerial?: string;
+  color?: string;
+  accessories?: string[];
+  /** Physical condition noted at intake (scratches, cracked back, etc.). */
+  condition?: string;
+  passcodeNote?: string;
+}
+
+export interface JobCardLine {
+  id: ID;
+  /** service = labour (no stock); part = spare part issued from stock. */
+  kind: 'service' | 'part';
+  productId: ID;
+  name: string;
+  qty: number;
+  unitPricePaise: Paise;
+  lineDiscountPct?: number;
+  batchId?: ID;
+  serials?: string[];
+  technicianId?: ID;
+  addedAt: ISODateTime;
+}
+
+export interface JobCardStatusEvent {
+  status: JobCardStatus;
+  at: ISODateTime;
+  userId: ID;
+  note?: string;
+}
+
+/** A repair job: device intake → diagnosis → services + parts → billed into a Sale on delivery. */
+export interface JobCard {
+  id: ID;
+  tenantId: ID;
+  storeId: ID;
+  counterId: ID;
+  jobNo: string; // JOB/26-27/TNR-C01/000012
+  customerId?: ID;
+  customerName: string;
+  customerPhone: string;
+  device: JobCardDevice;
+  problem: string;
+  diagnosis?: string;
+  estimatePaise?: Paise;
+  /** Advance collected at intake — informational, settled in the final bill tenders. */
+  advancePaise?: Paise;
+  technicianId?: ID;
+  promisedAt?: ISODateTime;
+  status: JobCardStatus;
+  lines: JobCardLine[];
+  statusHistory: JobCardStatusEvent[];
+  openedBy: ID;
+  openedAt: ISODateTime;
+  updatedAt: ISODateTime;
+  closedAt?: ISODateTime;
+  saleId?: ID;
+  saleDocumentNo?: string;
 }
