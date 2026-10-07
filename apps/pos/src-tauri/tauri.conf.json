@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Elixir POS",
+  "version": "0.1.0",
+  "identifier": "com.elixir.pos",
+  "build": {
+    "devUrl": "http://localhost:5170/pos/",
+    "frontendDist": "../dist",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Elixir POS",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 1280,
+        "minHeight": 720,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

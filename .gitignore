@@ -1,0 +1,8 @@
+node_modules
+dist
+.turbo
+.expo
+*.log
+.DS_Store
+apps/pos/src-tauri/target
+apps/pos/src-tauri/gen
