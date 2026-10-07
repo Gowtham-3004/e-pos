@@ -1,0 +1,13 @@
+{
+  "name": "@elixir/local-store",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": { ".": "./src/index.ts", "./react": "./src/react.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
+  "dependencies": { "@elixir/contracts": "workspace:*", "@elixir/domain": "workspace:*", "@elixir/mock-data": "workspace:*", "idb": "^8.0.0" },
+  "peerDependencies": { "react": ">=18" },
+  "devDependencies": { "react": "^19.1.0", "@types/react": "^19.1.0" }
+}

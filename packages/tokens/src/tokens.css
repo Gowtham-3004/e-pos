@@ -1,0 +1,119 @@
+/* Elixir POS semantic tokens — generated from packages/tokens/src/index.ts. Keep in sync. */
+:root {
+  --surface-app: #f4f6f9;
+  --surface-primary: #ffffff;
+  --surface-secondary: #fafbfc;
+  --surface-elevated: #ffffff;
+  --surface-selected: #eef2f8;
+  --surface-sunken: #eceff4;
+
+  --text-primary: #141821;
+  --text-secondary: #525a6a;
+  --text-muted: #6b7485;
+  --text-inverse: #ffffff;
+
+  --border-default: #dfe3ea;
+  --border-strong: #c9cfd9;
+  --border-focus: #2563c9;
+
+  --action-primary: #111c30;
+  --action-primary-hover: #263656;
+  --action-primary-text: #ffffff;
+  --action-secondary: #ffffff;
+  --action-disabled: #c9cfd9;
+
+  --status-success: #14804a;
+  --status-success-soft: #e8f6ee;
+  --status-warning: #b25e09;
+  --status-warning-soft: #fdf3e4;
+  --status-danger: #c8322f;
+  --status-danger-soft: #fcebea;
+  --status-info: #2563c9;
+  --status-info-soft: #e9f0fc;
+
+  --sync-online: #14804a;
+  --sync-offline: #6b7485;
+  --sync-pending: #b25e09;
+  --sync-error: #c8322f;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  --font-family: Inter, "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fs-xs: 12px;  --lh-xs: 16px;
+  --fs-sm: 13px;  --lh-sm: 18px;
+  --fs-md: 14px;  --lh-md: 20px;
+  --fs-lg: 16px;  --lh-lg: 22px;
+  --fs-xl: 18px;  --lh-xl: 24px;
+  --fs-2xl: 22px; --lh-2xl: 28px;
+  --fs-3xl: 28px; --lh-3xl: 34px;
+  --fs-4xl: 36px; --lh-4xl: 42px;
+
+  --shadow-card: 0 1px 2px rgba(17, 28, 48, 0.04), 0 1px 3px rgba(17, 28, 48, 0.04);
+  --shadow-pop: 0 8px 24px rgba(17, 28, 48, 0.12);
+  --shadow-modal: 0 24px 64px rgba(17, 28, 48, 0.22);
+
+  --touch-min: 44px;
+  --touch-pos: 48px;
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 220ms;
+
+  --sidebar-w: 232px;
+  --sidebar-w-compact: 68px;
+  --header-h: 56px;
+  color-scheme: light;
+}
+
+/* Dark theme is opt-in via data-theme="dark" (apps resolve system preference in JS via applyTheme()). */
+:root[data-theme="dark"] {
+  --surface-app: #0d121b;
+  --surface-primary: #151b26;
+  --surface-secondary: #111722;
+  --surface-elevated: #1b2230;
+  --surface-selected: #1f2a3d;
+  --surface-sunken: #0a0e15;
+  --text-primary: #e9edf3;
+  --text-secondary: #aab3c2;
+  --text-muted: #808a9b;
+  --text-inverse: #0d121b;
+  --border-default: #262f3e;
+  --border-strong: #344055;
+  --border-focus: #6b9cf0;
+  --action-primary: #e4eaf4;
+  --action-primary-hover: #ffffff;
+  --action-primary-text: #0d121b;
+  --action-secondary: #151b26;
+  --action-disabled: #344055;
+  --status-success: #46c07f;
+  --status-success-soft: #123222;
+  --status-warning: #e6a147;
+  --status-warning-soft: #352710;
+  --status-danger: #f06b67;
+  --status-danger-soft: #3a1716;
+  --status-info: #6b9cf0;
+  --status-info-soft: #15264a;
+  --sync-online: #46c07f;
+  --sync-offline: #808a9b;
+  --sync-pending: #e6a147;
+  --sync-error: #f06b67;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion-base: 0ms; --motion-slow: 0ms; }
+}
