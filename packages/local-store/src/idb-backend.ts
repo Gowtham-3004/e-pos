@@ -6,7 +6,7 @@ const META = '__meta';
 /** IndexedDB durable backend (web / Tauri webview). SQLite replaces this in the production desktop build (ADR-004). */
 export class IndexedDBBackend implements StorageBackend {
   private db?: IDBPDatabase;
-  constructor(private dbName: string, private schemaVersion = 3) {}
+  constructor(private dbName: string, private schemaVersion = 4) {}
 
   async open(collections: readonly string[]) {
     this.db = await openDB(this.dbName, this.schemaVersion, {

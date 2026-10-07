@@ -29,7 +29,7 @@ Back Office / Platform Admin ──read/write──▶ cloud DB
 
 ## Shared packages (import, don't fork)
 ### `@elixir/contracts` — all domain types
-Money is **integer paise** everywhere. Key types: `Tenant, Store, Counter, Device, User, Role, Shift, Product, Batch, SerialNumber, Customer, Supplier, Sale, SaleLine, Tender, SaleReturn, HeldCart, StockMovement, CashMovement, Purchase, StockAdjustment, Payment, AuditEvent, ApprovalRequest, SyncOutboxItem, SyncConflict, SyncStatusSnapshot, MenuItem, ModifierGroup, KitchenStation, Floor, DiningTable, RestaurantOrder, OrderLine, Kot, WaiterCall, EdgeNode, SupportTicket, SessionContext, Capability, Permission`.
+Money is **integer paise** everywhere. Key types: `Tenant, Store, Counter, Device, User, Role, Shift, Product, Batch, SerialNumber, Customer, Supplier, Sale, SaleLine, Tender, SaleReturn, HeldCart, StockMovement, CashMovement, Purchase, StockAdjustment, Payment, AuditEvent, ApprovalRequest, SyncOutboxItem, SyncConflict, SyncStatusSnapshot, MenuItem, ModifierGroup, KitchenStation, Floor, DiningTable, RestaurantOrder, OrderLine, Kot, WaiterCall, JobCard, JobCardLine, JobCardStatus, EdgeNode, SupportTicket, SessionContext, Capability, Permission`.
 
 ### `@elixir/domain` — pure logic
 - Tax/cart: `computeGst`, `computeCart(lines, billDiscountPct, ctx)` (MRP cap, bill-discount allocation, GST split, rupee round-off, savings), `priceLine`, `PricingError`, `discountNeedsApproval`, `changeDue`, `quickCashOptions`.
@@ -38,8 +38,9 @@ Money is **integer paise** everywhere. Key types: `Tenant, Store, Counter, Devic
 - Capabilities/RBAC: `resolveCapabilities(tenant)`, `PLANS`, `ADD_ONS`, `ROLES`, `roleByCode`, `authorize`, `can`, `VERTICAL_LABEL`, `CAPABILITY_LABEL`, `familyOf`.
 - Navigation: `composeNav(items, { capabilities, permissions, family })`, `POS_NAV`, `BACKOFFICE_NAV`, `PLATFORM_NAV` (icons are lucide names).
 - Restaurant: `orderTotals`, `orderLineTotal`, `validateModifiers`, `menuItemUnitPrice`, `buildKots`, `tableStatusFromOrder`, `kotUrgency`.
-- Status vocabulary (label + tone + icon): `TRANSACTION_STATUS, SYNC_STATE, OUTBOX_STATUS, CONNECTIVITY, DEVICE_STATUS, ORDER_STATUS, KOT_STATUS, TABLE_STATUS, SUBSCRIPTION_STATUS`.
-- Ids: `uid(prefix)`, `documentNumber(kind, counterCode, seq)`.
+- Job cards (repair): `JOB_CARD_FLOW`, `canTransition(from, to)`, `isJobCardOpen`, `jobCardToCartLines(card)`, `JOB_CARD_STATUS_LABEL`. `Product.isService` marks labour items (SAC, never stocked).
+- Status vocabulary (label + tone + icon): `JOB_CARD_STATUS, TRANSACTION_STATUS, SYNC_STATE, OUTBOX_STATUS, CONNECTIVITY, DEVICE_STATUS, ORDER_STATUS, KOT_STATUS, TABLE_STATUS, SUBSCRIPTION_STATUS`.
+- Ids: `uid(prefix)`, `documentNumber(kind, counterCode, seq)` (kinds INV, RET, PUR, ADJ, PAY, ORD, KOT, JOB).
 
 ### `@elixir/format`
 `money(paise)`, `moneyCompact`, `rupeesToPaise`, `number`, `qty`, `pct`, `date`, `dateLong`, `time`, `dateTime`, `monthYear`, `elapsed`, `elapsedMinutes`, `relative`, `isoDate`, `daysUntil`, `initials`. Never concatenate `₹` yourself.
@@ -50,10 +51,10 @@ ID conventions: store `s-<tenantId>-<n>`, counter `c-<storeId>-<n>`, device `d-<
 
 ### `@elixir/local-store`
 - `LocalDatabase`: `get(c, id)`, `all(c)` (stable cached array), `where(c, pred)`, `meta(key)`, `setMeta`, `put(c, ...entities)`, `remove`, `commit(ops, meta)` (atomic, durable-first), `subscribe`, `exclusive(fn)`.
-- Collections: `tenants companies stores counters devices users categories brands taxRates priceGroups products batches serials customers suppliers sales returns heldCarts stockMovements purchases adjustments payments loyaltyEvents shifts cashMovements menuItems modifierGroups stations floors tables orders kots waiterCalls auditEvents approvals syncConflicts outbox edgeNodes tickets changefeed inbox`.
-- Commands (device DB, atomic, write audit + outbox): `completeSale`, `markPrinted`, `holdCart`, `deleteHeldCart`, `commitReturn`, `openShift`, `closeShift`, `recordCashMovement`, `createApproval`, `decideApproval`, `createOrder`, `saveOrder`, `sendKot`, `setKotStatus`, `voidOrderLine`, `requestBill`, `transferTable`, `setTableStatus`, `settleOrder`, `resolveWaiterCall`. Errors: `LocalCommitError` (`code`: VALIDATION | STORAGE | TENDER_MISMATCH | NO_SHIFT | NOT_FOUND). Demo fault injection: `faults.failNextCommit`, `faults.failNextPrint`.
+- Collections: `tenants companies stores counters devices users categories brands taxRates priceGroups products batches serials customers suppliers sales returns heldCarts stockMovements purchases adjustments payments loyaltyEvents shifts cashMovements menuItems modifierGroups stations floors tables orders kots waiterCalls auditEvents approvals syncConflicts outbox edgeNodes tickets jobCards changefeed inbox`.
+- Commands (device DB, atomic, write audit + outbox): `completeSale`, `markPrinted`, `holdCart`, `deleteHeldCart`, `commitReturn`, `openShift`, `closeShift`, `recordCashMovement`, `createApproval`, `decideApproval`, `createOrder`, `saveOrder`, `sendKot`, `setKotStatus`, `voidOrderLine`, `requestBill`, `transferTable`, `setTableStatus`, `settleOrder`, `resolveWaiterCall`, `openJobCard`, `updateJobCard`, `addJobCardLine`, `removeJobCardLine`, `setJobCardStatus`, `billJobCard` (one atomic invoice: services + parts; only parts write `sale_out`; card → delivered). Errors: `LocalCommitError` (`code`: VALIDATION | STORAGE | TENDER_MISMATCH | NO_SHIFT | NOT_FOUND). Demo fault injection: `faults.failNextCommit`, `faults.failNextPrint`.
 - Sync: `new SyncEngine(device, cloud, { deviceId, tenantId })` → `start()`, `stop()`, `status()`, `subscribe(cb)`, `setNetwork(patch)`, `network`, `syncNow()`, `outbox()`, `injectConflict(storeId)`, `resolveQuarantined(id, 'retry'|'dismiss')`. `publishMasterChange(cloud, { tenantId, collection, entity, summary })`.
-- Selectors: `stockIndex`, `onHand(db, storeId, productId, batchId?)`, `onHandAllStores`, `tenantProducts`, `productByBarcode`, `searchProducts(db, tenantId, q)`, `batchesFor`, `lowStock`, `expiringBatches`, `salesFor`, `salesByDay`, `tenantCapabilities`, `resolveSession(db, { deviceId, userId })`, `derived(db, key, deps, compute)` for memoised projections.
+- Selectors: `stockIndex`, `onHand(db, storeId, productId, batchId?)`, `onHandAllStores`, `tenantProducts`, `productByBarcode`, `searchProducts(db, tenantId, q)`, `batchesFor`, `lowStock`, `expiringBatches`, `salesFor`, `salesByDay`, `jobCardsFor(db, storeId, open?)`, `jobCardTotals(db, card)` (same pricing as `billJobCard`), `tenantCapabilities`, `resolveSession(db, { deviceId, userId })`, `derived(db, key, deps, compute)` for memoised projections.
 - React (`@elixir/local-store/react`): `useLive(db, collections, compute, deps)`, `useCollection`, `useEntity`, `useMeta`, `useSyncStatus(engine)`, `useNow(ms)`.
 
 ### `@elixir/app-kit`

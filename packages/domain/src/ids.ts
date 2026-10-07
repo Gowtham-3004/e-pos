@@ -18,7 +18,7 @@ export function uid(prefix = ''): string {
  * Counter-scoped legal document number (ADR-014 proposed option: counter-scoped series).
  * INV/26-27/C02/001284 — FY + counter keeps offline counters collision-free.
  */
-export function documentNumber(kind: 'INV' | 'RET' | 'PUR' | 'ADJ' | 'PAY' | 'ORD' | 'KOT', counterCode: string, seq: number, at: Date = new Date()): string {
+export function documentNumber(kind: 'INV' | 'RET' | 'PUR' | 'ADJ' | 'PAY' | 'ORD' | 'KOT' | 'JOB', counterCode: string, seq: number, at: Date = new Date()): string {
   const y = at.getMonth() >= 3 ? at.getFullYear() : at.getFullYear() - 1;
   const fy = `${String(y).slice(2)}-${String(y + 1).slice(2)}`;
   return `${kind}/${fy}/${counterCode}/${String(seq).padStart(6, '0')}`;

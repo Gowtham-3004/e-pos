@@ -6,7 +6,7 @@ export const COLLECTIONS = [
   'tenants', 'companies', 'stores', 'counters', 'devices', 'users', 'categories', 'brands', 'taxRates', 'priceGroups', 'products', 'batches', 'serials',
   'customers', 'suppliers', 'sales', 'returns', 'heldCarts', 'stockMovements', 'purchases', 'adjustments', 'payments', 'loyaltyEvents', 'shifts',
   'cashMovements', 'menuItems', 'modifierGroups', 'stations', 'floors', 'tables', 'orders', 'kots', 'waiterCalls', 'auditEvents', 'approvals',
-  'syncConflicts', 'outbox', 'edgeNodes', 'tickets', 'changefeed', 'inbox',
+  'syncConflicts', 'outbox', 'edgeNodes', 'tickets', 'jobCards', 'changefeed', 'inbox',
 ] as const;
 
 export type CollectionName = (typeof COLLECTIONS)[number];

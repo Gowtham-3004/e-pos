@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CashMovement, Product, StockMovement, TaxRate, Tenant } from '@elixir/contracts';
-import { computeGst, computeCart, priceLine, PricingError, projectStock, closingBalance, cashBreakdown, expectedCash, variance, resolveCapabilities, composeNav, POS_NAV, roleByCode, validateModifiers, documentNumber } from './index';
+import { computeGst, computeCart, priceLine, PricingError, projectStock, closingBalance, cashBreakdown, expectedCash, variance, resolveCapabilities, composeNav, POS_NAV, roleByCode, validateModifiers, documentNumber, canTransition, jobCardToCartLines } from './index';
 
 const tax5: TaxRate = { id: 't5', name: 'GST 5%', ratePct: 5 };
 const tax18: TaxRate = { id: 't18', name: 'GST 18%', ratePct: 18 };
@@ -93,5 +93,26 @@ describe('restaurant', () => {
   });
   it('document number is FY + counter scoped', () => {
     expect(documentNumber('INV', 'C02', 1284, new Date('2026-10-07'))).toBe('INV/26-27/C02/001284');
+  });
+});
+
+describe('job card', () => {
+  it('enforces the repair workflow', () => {
+    expect(canTransition('received', 'diagnosing')).toBe(true);
+    expect(canTransition('in-progress', 'ready')).toBe(true);
+    expect(canTransition('ready', 'delivered')).toBe(true);
+    expect(canTransition('received', 'delivered')).toBe(false);
+    expect(canTransition('delivered', 'in-progress')).toBe(false);
+    expect(canTransition('cancelled', 'received')).toBe(false);
+  });
+  it('maps lines to cart inputs with quoted prices', () => {
+    const lines = jobCardToCartLines({ lines: [
+      { id: 'a', kind: 'service', productId: 's1', name: 'Labour', qty: 1, unitPricePaise: 49900, addedAt: '' },
+      { id: 'b', kind: 'part', productId: 'p1', name: 'Display', qty: 1, unitPricePaise: 1349900, serials: ['X1'], lineDiscountPct: 5, addedAt: '' },
+    ] });
+    expect(lines).toEqual([
+      { productId: 's1', qty: 1, unitPricePaise: 49900, lineDiscountPct: undefined, batchId: undefined, serials: undefined, note: 'service' },
+      { productId: 'p1', qty: 1, unitPricePaise: 1349900, lineDiscountPct: 5, batchId: undefined, serials: ['X1'], note: 'part' },
+    ]);
   });
 });

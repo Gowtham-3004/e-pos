@@ -16,6 +16,7 @@ import { CustomerPicker } from '../components/CustomerPicker';
 import { ShortcutOverlay } from '../components/ShortcutOverlay';
 import { ShiftGate } from '../components/ShiftGate';
 import { Receipt } from '../components/Receipt';
+import { SerialPicker } from '../components/SerialPicker';
 import type { ApprovalAction } from '@elixir/contracts';
 
 interface PendingApproval {
@@ -58,7 +59,8 @@ function Billing() {
   // Live re-evaluation when stock/products/prices change (pulled master changes apply instantly).
   const customer = useLive(device, ['customers'], () => device.get('customers', cart.customerId), [cart.customerId]);
   const view = useLive(device, ['products', 'stockMovements', 'batches', 'taxRates'], () => evaluateCart(device, s, cart.lines, cart.billDiscountPct, customer, cart.priceMode), [cart.lines, cart.billDiscountPct, customer, cart.priceMode, s.store.id]);
-  const results = useLive(device, ['products'], () => (query.trim().length >= 2 ? searchProducts(device, s.tenant.id, query, 12) : []), [query]);
+  // Service (labour) items are sold only on job cards.
+  const results = useLive(device, ['products'], () => (query.trim().length >= 2 ? searchProducts(device, s.tenant.id, query, 16).filter((p) => !p.isService).slice(0, 12) : []), [query]);
   const held = useLive(device, ['heldCarts'], () => device.where('heldCarts', (h) => h.counterId === s.counter?.id).sort((a, b) => b.heldAt.localeCompare(a.heldAt)), [s.counter?.id]);
   const seqs = useMeta<Record<string, number>>(device, 'sequences');
   const nextInvoice = documentNumber('INV', `${s.store.code}-${s.counter?.code}`, (seqs?.[`INV|${s.counter?.id}`] ?? 1000) + 1);
@@ -142,7 +144,7 @@ function Billing() {
   const onScan = (code: string) => {
     if (dropdown && hi >= 0 && results[hi]) return addProduct(results[hi]);
     const exact = productByBarcode(device, s.tenant.id, code);
-    if (exact) return addProduct(exact);
+    if (exact && !exact.isService) return addProduct(exact);
     if (results.length) {
       setDropdown(true);
       setHi(0);
@@ -697,30 +699,6 @@ function BillDiscountDialog({ open, current, limit, onClose, onApply }: { open: 
           {[0, 2, 5, 10, 15, 20].map((x) => <button key={x} type="button" className="ex-chip" aria-pressed={n === x} onClick={() => setV(String(x))}>{x === 0 ? 'None' : `${x}%`}</button>)}
         </div>
         {n > limit ? <InlineAlert tone="warning" icon="ShieldCheck">Above your {limit}% limit — a manager PIN is needed to apply {n}%.</InlineAlert> : null}
-      </div>
-    </Modal>
-  );
-}
-
-function SerialPicker({ product, taken, onClose, onPick }: { product: Product; taken: string[]; onClose: () => void; onPick: (serial: string) => void }) {
-  const { device } = usePos();
-  const [q, setQ] = useState('');
-  const serials = useMemo(() => device.where('serials', (x) => x.productId === product.id && x.status === 'in-stock' && !taken.includes(x.serial)), [device, product.id, taken]);
-  const list = serials.filter((x) => x.serial.toLowerCase().includes(q.trim().toLowerCase()));
-  return (
-    <Modal open onClose={onClose} size="sm" title={`Select serial / IMEI`} description={`${product.name}${product.model ? ` · ${product.model}` : ''}${product.warrantyMonths ? ` · ${product.warrantyMonths} months warranty` : ''}`}>
-      <div className="ex-stack">
-        <TextField autoFocus icon="ScanLine" placeholder="Scan or type serial / IMEI" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && list[0]) onPick(list[0].serial); }} />
-        <div className="pos-list" style={{ maxHeight: 300 }}>
-          {list.map((x) => (
-            <button key={x.id} type="button" className="pos-list__row" onClick={() => onPick(x.serial)}>
-              <Icon name="Hash" size={16} />
-              <span className="num" style={{ flex: 1, textAlign: 'left' }}>{x.serial}</span>
-              <Badge tone="success" icon="PackageCheck">In stock</Badge>
-            </button>
-          ))}
-          {!list.length ? <EmptyState quiet title="No in-stock serials">{serials.length ? 'No serial matches your search.' : 'All units of this product are sold or allocated.'}</EmptyState> : null}
-        </div>
       </div>
     </Modal>
   );

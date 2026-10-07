@@ -14,7 +14,7 @@ export function ProductPicker({ onPick, placeholder = 'Search product by name, S
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const ref = useRef<HTMLInputElement>(null);
-  const results = useMemo(() => searchProducts(cloud, s.tenant.id, q, 12).filter((p) => !exclude?.includes(p.id)), [cloud, s.tenant.id, q, exclude]);
+  const results = useMemo(() => searchProducts(cloud, s.tenant.id, q, 16).filter((p) => !p.isService && !exclude?.includes(p.id)).slice(0, 12), [cloud, s.tenant.id, q, exclude]);
   const pick = (p: Product) => {
     onPick(p);
     setQ('');

@@ -50,6 +50,7 @@ interface FormState {
   model: string;
   warrantyMonths: string;
   serialTracked: boolean;
+  isService: boolean;
   uoms: UomConversion[];
 }
 
@@ -87,6 +88,7 @@ function toForm(p?: Product): FormState {
     model: p?.model ?? '',
     warrantyMonths: p?.warrantyMonths != null ? String(p.warrantyMonths) : '',
     serialTracked: !!p?.serialTracked,
+    isService: !!p?.isService,
     uoms: p?.uomConversions ?? [],
   };
 }
@@ -197,6 +199,7 @@ function ProductFormInner({ id }: { id?: string }) {
       model: f.model || undefined,
       warrantyMonths: f.warrantyMonths ? Number(f.warrantyMonths) : undefined,
       serialTracked: f.serialTracked || undefined,
+      isService: f.isService || undefined,
       uomConversions: f.uoms.length ? f.uoms : undefined,
     } as Product;
     const priceChanged = existing && (existing.salePaise !== p.salePaise || existing.mrpPaise !== p.mrpPaise);
@@ -210,7 +213,7 @@ function ProductFormInner({ id }: { id?: string }) {
       entityName: 'product',
       before: existing,
     });
-    if (isNew && Number(f.openingStock) > 0 && s.stores[0]) {
+    if (isNew && !f.isService && Number(f.openingStock) > 0 && s.stores[0]) {
       const storeId = s.storeId !== 'all' ? s.storeId : s.stores[0].id;
       await cloud.commit([
         { collection: 'stockMovements', put: [{ id: uid('mv'), tenantId: s.tenant.id, storeId, productId: p.id, type: 'opening', qty: Number(f.openingStock), sourceType: 'opening', sourceId: p.id, userId: s.user.id, createdAt: new Date().toISOString() }] },
@@ -291,6 +294,16 @@ function ProductFormInner({ id }: { id?: string }) {
               </FormSection>
 
               <FormSection title="Inventory" icon="Boxes">
+                {s.has('job-card') ? (
+                  <div className="ex-field bo-span-2">
+                    <Switch
+                      label="Service item — repair labour sold on job cards, never stocked (SAC code in HSN field)"
+                      checked={f.isService}
+                      onChange={(val) => { set('isService', val); if (val && !f.hsn) set('hsn', '998713'); }}
+                    />
+                  </div>
+                ) : null}
+                {f.isService ? null : (<>
                 <TextField name="reorderLevel" label="Reorder level" inputMode="numeric" value={f.reorderLevel} onChange={(e) => set('reorderLevel', e.target.value)} error={err('reorderLevel')} hint="Low-stock alert when on hand falls to this level" />
                 {isNew ? (
                   <TextField name="openingStock" label="Opening stock" inputMode="decimal" value={f.openingStock} onChange={(e) => set('openingStock', e.target.value)} error={err('openingStock')} hint={`Posted as an Opening movement in ${s.storeId !== 'all' ? s.storeName(s.storeId) : s.stores[0]?.name}`} />
@@ -309,6 +322,7 @@ function ProductFormInner({ id }: { id?: string }) {
                     />
                   </div>
                 )}
+                </>)}
               </FormSection>
 
               {has('batch-expiry') ? (

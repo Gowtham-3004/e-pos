@@ -1,6 +1,7 @@
-import type { Batch, Capability, Permission, Product, Sale, SessionContext } from '@elixir/contracts';
-import { expiryHealth, familyOf, resolveCapabilities, roleByCode, stockHealth } from '@elixir/domain';
+import type { Batch, Capability, JobCard, Permission, Product, Sale, SessionContext } from '@elixir/contracts';
+import { computeCart, expiryHealth, familyOf, isJobCardOpen, jobCardToCartLines, resolveCapabilities, roleByCode, stockHealth, type CartTotals } from '@elixir/domain';
 import type { LocalDatabase } from './db';
+import { jobCardPricingOverride } from './commands';
 
 const memo = new WeakMap<LocalDatabase, Map<string, { v: string; value: unknown }>>();
 
@@ -84,6 +85,7 @@ export function batchesFor(db: LocalDatabase, productId: string): Batch[] {
 
 export function lowStock(db: LocalDatabase, tenantId: string, storeId: string) {
   return tenantProducts(db, tenantId)
+    .filter((p) => !p.isService)
     .map((p) => ({ product: p, onHand: onHand(db, storeId, p.id) }))
     .filter((x) => stockHealth(x.onHand, x.product.reorderLevel) !== 'ok');
 }
@@ -132,4 +134,24 @@ export function resolveSession(db: LocalDatabase, input: { deviceId: string; use
   let permissions: Permission[] = role.permissions;
   if (familyOf(tenant.vertical) === 'retail') permissions = permissions.filter((p) => !p.startsWith('restaurant.') && p !== 'kds.operate');
   return { tenant, store, counter, device, user, role, shift, capabilities, permissions, authMode: input.authMode ?? 'online' };
+}
+
+/** Job cards for a store, newest first; `open` limits to cards still in the workshop. */
+export function jobCardsFor(db: LocalDatabase, storeId: string, open?: boolean): JobCard[] {
+  return db.where('jobCards', (j) => j.storeId === storeId && (!open || isJobCardOpen(j.status))).sort((a, b) => b.openedAt.localeCompare(a.openedAt));
+}
+
+/** Live bill preview for a job card — same pricing path as billJobCard. */
+export function jobCardTotals(db: LocalDatabase, card: JobCard, billDiscountPct = 0): CartTotals {
+  const store = db.get('stores', card.storeId);
+  const customer = db.get('customers', card.customerId);
+  const override = jobCardPricingOverride(card);
+  const pg = customer?.priceGroupId ? db.get('priceGroups', customer.priceGroupId) : undefined;
+  return computeCart(jobCardToCartLines(card), billDiscountPct, {
+    products: new Map(db.where('products', (p) => p.tenantId === card.tenantId).map((p) => [p.id, override(p) ?? p])),
+    taxRates: new Map(db.all('taxRates').map((t) => [t.id, t])),
+    batches: new Map(db.all('batches').map((b) => [b.id, b])),
+    interState: !!customer?.stateCode && customer.stateCode !== store?.stateCode,
+    priceGroupDiscountPct: pg?.discountPct,
+  });
 }

@@ -33,7 +33,7 @@ Always open the web apps through the launcher on port **5170**. It serves them a
 | ABC Supermarket | Grocery · Pro + Multi-store | Arun 1234, Meena 4321 (cashiers) · Priya 2222 (manager) · Ramesh 1111 (owner) · Suresh 7777 (accountant) · Vignesh 8888 (inventory) |
 | Trendz Fashion | Fashion · Pro + Loyalty | same PIN pattern |
 | Wellness Pharmacy | Pharmacy · Business (Store Edge) | same PIN pattern |
-| Volt Electronics | Electronics · Starter | same PIN pattern |
+| Volt Electronics | Electronics · Starter · Repair desk (job cards) | same PIN pattern |
 | Spice Route Kitchen | Restaurant · Business + QR | Arun 1234 (cashier) · Ravi 5555 / Deepa 5556 / John 5557 (waiters) · Chef Murugan 6666 (kitchen) · Priya 2222 · Karthik 1111 |
 | Platform | — | Nisha 9999 (platform admin) · Rahul 9998 (support) |
 
@@ -44,6 +44,14 @@ Always open the web apps through the launcher on port **5170**. It serves them a
 3. Open **Back Office** in another tab. The sale is not there yet.
 4. Switch POS back **Online**. The outbox drains, the sale shows `Synced`, and Back Office updates live.
 5. Change a product price in Back Office. The POS pulls it on the next sync.
+
+## Try a repair job card (services + parts)
+
+1. Activate the POS as Volt Electronics → T. Nagar → C01 and sign in as Arun (1234). Open a shift.
+2. Go to **Job Cards** and select **New job card**. Enter the customer, the device (brand, model, IMEI, accessories) and the reported problem.
+3. Move the job through **Diagnosing** and **In Progress**. Add the labour charge under **Services** (you can quote any price) and add spare parts from stock. Serialised parts ask for a serial number.
+4. Mark the job **Ready for Pickup**, then select **Bill & deliver**. This posts one GST invoice for the services and parts. Only the parts are deducted from stock, and the job card becomes **Delivered**.
+5. In **Back Office**, open **Job Cards** to see every job, its timeline, and a link to its invoice.
 
 ## Known limits
 

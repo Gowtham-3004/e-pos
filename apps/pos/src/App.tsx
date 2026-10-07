@@ -20,6 +20,8 @@ import { RunningScreen } from './screens/Running';
 import { KdsScreen } from './screens/Kds';
 import { SyncCenterScreen } from './screens/SyncCenter';
 import { DevicesScreen } from './screens/Devices';
+import { JobCardsScreen } from './screens/JobCards';
+import { JobCardScreen } from './screens/JobCard';
 import './styles/pos.css';
 
 // Web is served under /pos (launcher proxy); a packaged Tauri build serves from its own root.
@@ -55,9 +57,10 @@ function Shell() {
     // Kitchen counter/users only see the KDS; the shift module is for billing counters.
     return isKitchenUser ? all.filter((i) => i.key === 'kds') : all;
   }, [s.capabilities, s.permissions, s.family, isKitchenUser]);
-  const badges = useLive(device, ['heldCarts', 'orders', 'kots'], () => ({
+  const badges = useLive(device, ['heldCarts', 'orders', 'kots', 'jobCards'], () => ({
     held: device.where('heldCarts', (h) => h.counterId === s.counter?.id).length || undefined,
     running: device.where('orders', (o) => o.storeId === s.store.id && !o.closedAt && o.status !== 'cancelled').length || undefined,
+    jobcards: device.where('jobCards', (j) => j.storeId === s.store.id && j.status === 'ready').length || undefined,
     kds: device.where('kots', (k) => k.storeId === s.store.id && (k.status === 'new' || k.status === 'accepted')).length || undefined,
   }), [s.counter?.id, s.store.id]);
 
@@ -103,6 +106,8 @@ function Shell() {
         <Route path="/" element={<Navigate to={landing} replace />} />
         <Route path="/billing" element={guard('billing', <BillingScreen />)} />
         <Route path="/held" element={guard('held', <HeldScreen />)} />
+        <Route path="/jobcards" element={guard('jobcards', <JobCardsScreen />)} />
+        <Route path="/jobcards/:jobId" element={guard('jobcards', <JobCardScreen />)} />
         <Route path="/sales" element={guard('sales', <SalesScreen />)} />
         <Route path="/returns" element={guard('returns', <ReturnsScreen />)} />
         <Route path="/cash" element={guard('cash', <CashScreen />)} />

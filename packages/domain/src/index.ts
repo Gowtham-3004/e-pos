@@ -7,3 +7,4 @@ export * from './capabilities';
 export * from './navigation';
 export * from './restaurant';
 export * from './status';
+export * from './jobcard';

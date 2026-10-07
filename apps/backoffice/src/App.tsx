@@ -9,6 +9,8 @@ import { NoAccess, NotAvailable, NotFound } from './components/common';
 import { Dashboard } from './pages/Dashboard';
 import { SalesList } from './pages/sales/SalesList';
 import { SaleDetail } from './pages/sales/SaleDetail';
+import { JobCardList } from './pages/jobcards/JobCardList';
+import { JobCardDetail } from './pages/jobcards/JobCardDetail';
 import { ProductsList } from './pages/products/ProductsList';
 import { ProductForm } from './pages/products/ProductForm';
 import { StyleMatrixPage } from './pages/products/StyleMatrix';
@@ -60,6 +62,8 @@ function Authed() {
         <Route path="/" element={g('dashboard', <Dashboard />)} />
         <Route path="/sales" element={g('sales', <SalesList />)} />
         <Route path="/sales/:id" element={g('sales', <SaleDetail />)} />
+        <Route path="/jobcards" element={g('jobcards', <JobCardList />)} />
+        <Route path="/jobcards/:id" element={g('jobcards', <JobCardDetail />)} />
         <Route path="/products" element={g('products', <ProductsList />)} />
         <Route path="/products/new" element={g('products', <ProductForm />)} />
         <Route path="/products/styles/:style" element={g('products', <StyleMatrixPage />)} />

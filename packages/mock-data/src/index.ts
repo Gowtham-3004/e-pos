@@ -1,6 +1,6 @@
 import type {
   ApprovalRequest, AuditEvent, Batch, Brand, CashMovement, Category, Company, Counter, Customer, Device, DiningTable, EdgeNode, Floor, HeldCart,
-  KitchenStation, Kot, LoyaltyEvent, MenuItem, ModifierGroup, Payment, PriceGroup, Product, Purchase, RestaurantOrder, Sale, SaleReturn, SerialNumber,
+  JobCard, KitchenStation, Kot, LoyaltyEvent, MenuItem, ModifierGroup, Payment, PriceGroup, Product, Purchase, RestaurantOrder, Sale, SaleReturn, SerialNumber,
   Shift, StockAdjustment, StockMovement, Store, Supplier, SupportTicket, SyncConflict, SyncOutboxItem, TaxRate, Tenant, User, WaiterCall,
 } from '@elixir/contracts';
 import { createRng, resetSid } from './rng';
@@ -9,6 +9,7 @@ import { buildCatalogs, priceGroups, taxRates } from './catalog';
 import { buildParties } from './parties';
 import { buildRestaurantRuntime, floors, menuItems, modifierGroups, restaurantCategories, stations } from './restaurant';
 import { buildHistory } from './history';
+import { buildRepairDesk } from './repair';
 
 export { TENANT_IDS, DEMO_TENANT_IDS };
 
@@ -54,12 +55,13 @@ export interface SeedData {
   outbox: SyncOutboxItem[];
   edgeNodes: EdgeNode[];
   tickets: SupportTicket[];
+  jobCards: JobCard[];
   /** Next document sequence per `${kind}|${counterId}` so the POS continues numbering. */
   sequences: Record<string, number>;
 }
 
 /** Bump when seed shape changes; local-store reseeds when the stored version differs. */
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
 
 let cached: SeedData | null = null;
 
@@ -75,6 +77,8 @@ export function buildSeed(): SeedData {
   const sequences: Record<string, number> = Object.fromEntries(history.counterSeq);
   sequences['KOT|global'] = runtime.nextKotSeq;
   sequences['ORD|global'] = runtime.nextOrderSeq;
+  const repair = buildRepairDesk(parties.customers);
+  Object.assign(sequences, repair.sequences);
   cached = {
     version: SEED_VERSION,
     generatedAt: new Date().toISOString(),
@@ -84,19 +88,19 @@ export function buildSeed(): SeedData {
     counters,
     devices,
     users,
-    categories: [...catalog.categories, ...restaurantCategories],
+    categories: [...catalog.categories, ...repair.categories, ...restaurantCategories],
     brands: catalog.brands,
     taxRates,
     priceGroups,
-    products: catalog.products,
+    products: [...catalog.products, ...repair.products],
     batches: catalog.batches,
-    serials: catalog.serials,
+    serials: [...catalog.serials, ...repair.serials],
     customers: parties.customers,
     suppliers: parties.suppliers,
     sales: history.sales,
     returns: history.returns,
     heldCarts: [],
-    stockMovements: history.stockMovements,
+    stockMovements: [...history.stockMovements, ...repair.stockMovements],
     purchases: history.purchases,
     adjustments: history.adjustments,
     payments: history.payments,
@@ -117,6 +121,7 @@ export function buildSeed(): SeedData {
     outbox: [],
     edgeNodes: history.edgeNodes,
     tickets: history.tickets,
+    jobCards: repair.jobCards,
     sequences,
   };
   return cached;
